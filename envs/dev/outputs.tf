@@ -10,3 +10,8 @@ output "resource_group_id" {
 output "vnet_name" { value = module.network.vnet_name }
 
 output "subnet_ids" { value = module.network.subnet_ids }
+
+output "private_dns_zone_ids" {
+  value       = module.private_dns.private_dns_zone_ids
+  description = "Private DNS zone IDs"
+}

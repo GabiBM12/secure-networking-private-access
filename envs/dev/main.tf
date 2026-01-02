@@ -40,3 +40,18 @@ module "network" {
 
   tags = local.tags
 }
+
+module "private_dns" {
+  source = "../../modules/private-dns"
+
+  resource_group_name = module.rg.name
+  location            = var.location
+  vnet_id             = module.network.vnet_id
+
+  dns_zones = {
+    blob     = "privatelink.blob.core.windows.net"
+    keyvault = "privatelink.vaultcore.azure.net"
+  }
+
+  tags = local.tags
+}
