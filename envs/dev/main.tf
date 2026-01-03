@@ -116,3 +116,40 @@ module "pe_keyvault" {
 
   tags = local.tags
 }
+
+module "rbac" {
+  source = "../../modules/iam-rbac"
+
+  assignments = {
+    # For verification/testing: grant your current identity access.
+    # You can later replace this with managed identities from workloads.
+    me_kv_secrets_officer = {
+      scope                = module.keyvault.id
+      role_definition_name = "Key Vault Secrets Officer"
+      principal_id         = data.azurerm_client_config.current.object_id
+    }
+
+    me_storage_blob_contributor = {
+      scope                = module.storage.id
+      role_definition_name = "Storage Blob Data Contributor"
+      principal_id         = data.azurerm_client_config.current.object_id
+    }
+  }
+}
+
+module "policy" {
+  source = "../../modules/policy-guardrails"
+  RG_id  = module.rg.id
+
+  assignments = {
+    kv_disable_public_access = {
+      display_name         = "Guardrail: Key Vault public network access disabled"
+      policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/405c5871-3e91-4644-8a63-58e19d68ff5b"
+    }
+
+    storage_disable_public_access = {
+      display_name         = "Guardrail: Storage public network access disabled"
+      policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/b2982f36-99f2-4db5-8eff-283140c09693"
+    }
+  }
+}
