@@ -55,3 +55,24 @@ module "private_dns" {
 
   tags = local.tags
 }
+
+data "azurerm_client_config" "current" {}
+
+module "storage" {
+  source = "../../modules/storage-private"
+
+  name_prefix         = local.name_prefix
+  location            = var.location
+  resource_group_name = module.rg.name
+  tags                = local.tags
+}
+
+module "keyvault" {
+  source = "../../modules/keyvault-private"
+
+  name_prefix         = local.name_prefix
+  location            = var.location
+  resource_group_name = module.rg.name
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+  tags                = local.tags
+}
