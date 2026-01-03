@@ -76,3 +76,43 @@ module "keyvault" {
   tenant_id           = data.azurerm_client_config.current.tenant_id
   tags                = local.tags
 }
+
+locals {
+  pe_subnet_id = module.network.subnet_ids["snet-private-endpoints"]
+}
+
+module "pe_storage_blob" {
+  source = "../../modules/private-endpoint"
+
+  name                = "pe-${local.name_prefix}-st-blob"
+  location            = var.location
+  resource_group_name = module.rg.name
+  subnet_id           = local.pe_subnet_id
+
+  private_connection_resource_id = module.storage.id
+  subresource_names              = ["blob"]
+
+  private_dns_zone_ids = [
+    module.private_dns.private_dns_zone_ids["blob"]
+  ]
+
+  tags = local.tags
+}
+
+module "pe_keyvault" {
+  source = "../../modules/private-endpoint"
+
+  name                = "pe-${local.name_prefix}-kv"
+  location            = var.location
+  resource_group_name = module.rg.name
+  subnet_id           = local.pe_subnet_id
+
+  private_connection_resource_id = module.keyvault.id
+  subresource_names              = ["vault"]
+
+  private_dns_zone_ids = [
+    module.private_dns.private_dns_zone_ids["keyvault"]
+  ]
+
+  tags = local.tags
+}
