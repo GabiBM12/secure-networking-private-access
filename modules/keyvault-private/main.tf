@@ -7,6 +7,7 @@ resource "azurerm_key_vault" "this" {
 
   # private-by-default posture
   public_network_access_enabled = false
+  enable_rbac_authorization = true
 
   tags = var.tags
 }

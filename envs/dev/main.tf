@@ -116,3 +116,23 @@ module "pe_keyvault" {
 
   tags = local.tags
 }
+
+module "rbac" {
+  source = "../../modules/iam-rbac"
+
+  assignments = {
+    # For verification/testing: grant your current identity access.
+    # You can later replace this with managed identities from workloads.
+    me_kv_secrets_officer = {
+      scope                = module.keyvault.id
+      role_definition_name = "Key Vault Secrets Officer"
+      principal_id         = data.azurerm_client_config.current.object_id
+    }
+
+    me_storage_blob_contributor = {
+      scope                = module.storage.id
+      role_definition_name = "Storage Blob Data Contributor"
+      principal_id         = data.azurerm_client_config.current.object_id
+    }
+  }
+}
