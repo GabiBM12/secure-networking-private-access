@@ -18,15 +18,23 @@ variable "vnet_address_space" {
   type        = list(string)
 }
 
-variable "subnets" {
-  description = "Subnet map keyed by subnet name"
-  type = map(object({
-    address_prefixes = list(string)
-  }))
-}
-
 variable "tags" {
   description = "Tags for taggable resources"
   type        = map(string)
   default     = {}
+}
+
+variable "subnets" {
+  description = "Subnet map keyed by subnet name"
+  type = map(object({
+    address_prefixes = list(string)
+
+    delegation = optional(object({
+      name = string
+      service_delegation = object({
+        name    = string
+        actions = list(string)
+      })
+    }))
+  }))
 }
