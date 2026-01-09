@@ -36,16 +36,8 @@ module "network" {
     snet-private-endpoints = {
       address_prefixes = ["10.0.1.0/24"]
     }
-    snet-container-apps = {
-      address_prefixes = ["10.0.4.0/23"]
-
-      delegation = {
-        name = "delegation-container-apps"
-        service_delegation = {
-          name    = "Microsoft.App/environments"
-          actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
-        }
-      }
+    snet-aca-env = {
+      address_prefixes = ["10.0.6.0/23"]
     }
   }
 
