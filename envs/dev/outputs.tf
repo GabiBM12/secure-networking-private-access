@@ -26,3 +26,9 @@ output "acr_name" {
 output "acr_login_server" {
   value = module.acr.login_server
 }
+output "keyvault_id" {
+  value = module.keyvault.id
+}
+output "storage_account_id" {
+  value = module.storage.id
+}
