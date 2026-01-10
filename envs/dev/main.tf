@@ -70,6 +70,16 @@ module "storage" {
   tags                = local.tags
 }
 
+module "acr" {
+  source = "../../modules/container-registry"
+
+  name                = "acr${replace(local.name_prefix, "-", "")}core"
+  resource_group_name = module.rg.name
+  location            = var.location
+  sku                 = "Basic"
+  tags                = local.tags
+}
+
 module "keyvault" {
   source = "../../modules/keyvault-private"
 
