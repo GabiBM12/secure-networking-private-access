@@ -44,6 +44,76 @@ module "network" {
   tags = local.tags
 }
 
+module "egress_nat" {
+  source              = "../../modules/egress-nat"
+  name_prefix         = local.name_prefix
+  location            = var.location
+  resource_group_name = module.rg.name
+  tags                = local.tags
+
+  subnet_ids = [
+    module.network.subnet_ids["snet-aca-env"],
+    module.network.subnet_ids["snet-workloads"],
+  ]
+}
+
+module "nsg_private_endpoints" {
+  source              = "../../modules/nsg"
+  name                = "nsg-${local.name_prefix}-private-endpoints"
+  location            = var.location
+  resource_group_name = module.rg.name
+  subnet_id           = module.network.subnet_ids["snet-private-endpoints"]
+  tags                = local.tags
+
+  rules = [
+    {
+      name                       = "Deny-Internet-Outbound"
+      priority                   = 100
+      direction                  = "Outbound"
+      access                     = "Deny"
+      protocol                   = "*"
+      source_port_range          = "*"
+      destination_port_range     = "*"
+      source_address_prefix      = "*"
+      destination_address_prefix = "Internet"
+    }
+  ]
+}
+
+module "nsg_aca_env" {
+  source              = "../../modules/nsg"
+  name                = "nsg-${local.name_prefix}-aca-env"
+  location            = var.location
+  resource_group_name = module.rg.name
+  subnet_id           = module.network.subnet_ids["snet-aca-env"]
+  tags                = local.tags
+
+  rules = [
+    {
+      name                       = "Allow-AzureLoadBalancer-Inbound"
+      priority                   = 100
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "*"
+      source_port_range          = "*"
+      destination_port_range     = "*"
+      source_address_prefix      = "AzureLoadBalancer"
+      destination_address_prefix = "*"
+    }
+  ]
+}
+
+module "nsg_workloads" {
+  source              = "../../modules/nsg"
+  name                = "nsg-${local.name_prefix}-workloads"
+  location            = var.location
+  resource_group_name = module.rg.name
+  subnet_id           = module.network.subnet_ids["snet-workloads"]
+  tags                = local.tags
+
+  rules = []
+}
+
 module "private_dns" {
   source = "../../modules/private-dns"
 
