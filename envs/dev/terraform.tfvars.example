@@ -7,6 +7,6 @@ tags = {
   cost_center = "lab"
 }
 rbac_principal_object_ids = [
-  "b2d4618e-7e38-4b23-9b4a-47564605a9c8", # Gabi Bostan user object ID
-  "9727533f-77dc-41f0-ac57-19ea3712a3ca", # GitHub OIDC SP object ID
+  "<YOUR_USER_OBJECT_ID>",
+  "<GHA_FEDERATED_SP_OBJECT_ID>"
 ]

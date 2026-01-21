@@ -1,5 +1,6 @@
 locals {
-  name_prefix = "${var.project_name}-${var.environment}"
+  name_prefix          = "${var.project_name}-${var.environment}"
+  bootstrap_principals = toset(var.rbac_principal_object_ids)
 
   tags = merge(
     var.tags,
@@ -42,6 +43,76 @@ module "network" {
   }
 
   tags = local.tags
+}
+
+module "egress_nat" {
+  source              = "../../modules/egress-nat"
+  name_prefix         = local.name_prefix
+  location            = var.location
+  resource_group_name = module.rg.name
+  tags                = local.tags
+
+  subnet_ids = [
+    module.network.subnet_ids["snet-aca-env"],
+    module.network.subnet_ids["snet-workloads"],
+  ]
+}
+
+module "nsg_private_endpoints" {
+  source              = "../../modules/nsg"
+  name                = "nsg-${local.name_prefix}-private-endpoints"
+  location            = var.location
+  resource_group_name = module.rg.name
+  subnet_id           = module.network.subnet_ids["snet-private-endpoints"]
+  tags                = local.tags
+
+  rules = [
+    {
+      name                       = "Deny-Internet-Outbound"
+      priority                   = 100
+      direction                  = "Outbound"
+      access                     = "Deny"
+      protocol                   = "*"
+      source_port_range          = "*"
+      destination_port_range     = "*"
+      source_address_prefix      = "*"
+      destination_address_prefix = "Internet"
+    }
+  ]
+}
+
+module "nsg_aca_env" {
+  source              = "../../modules/nsg"
+  name                = "nsg-${local.name_prefix}-aca-env"
+  location            = var.location
+  resource_group_name = module.rg.name
+  subnet_id           = module.network.subnet_ids["snet-aca-env"]
+  tags                = local.tags
+
+  rules = [
+    {
+      name                       = "Allow-AzureLoadBalancer-Inbound"
+      priority                   = 100
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "*"
+      source_port_range          = "*"
+      destination_port_range     = "*"
+      source_address_prefix      = "AzureLoadBalancer"
+      destination_address_prefix = "*"
+    }
+  ]
+}
+
+module "nsg_workloads" {
+  source              = "../../modules/nsg"
+  name                = "nsg-${local.name_prefix}-workloads"
+  location            = var.location
+  resource_group_name = module.rg.name
+  subnet_id           = module.network.subnet_ids["snet-workloads"]
+  tags                = local.tags
+
+  rules = []
 }
 
 module "private_dns" {
@@ -130,22 +201,28 @@ module "pe_keyvault" {
   tags = local.tags
 }
 
-module "rbac" {
+module "rbac_kv_secrets_officer" {
   source = "../../modules/iam-rbac"
 
   assignments = {
-    # For verification/testing: grant your current identity access.
-    # You can later replace this with managed identities from workloads.
-    me_kv_secrets_officer = {
+    for pid in local.bootstrap_principals :
+    "kv-secrets-officer-${pid}" => {
       scope                = module.keyvault.id
       role_definition_name = "Key Vault Secrets Officer"
-      principal_id         = data.azurerm_client_config.current.object_id
+      principal_id         = pid
     }
+  }
+}
 
-    me_storage_blob_contributor = {
+module "rbac_storage_blob_contributor" {
+  source = "../../modules/iam-rbac"
+
+  assignments = {
+    for pid in local.bootstrap_principals :
+    "st-blob-contrib-${pid}" => {
       scope                = module.storage.id
       role_definition_name = "Storage Blob Data Contributor"
-      principal_id         = data.azurerm_client_config.current.object_id
+      principal_id         = pid
     }
   }
 }

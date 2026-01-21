@@ -8,6 +8,11 @@ crash.*.log
 
 # Sensitive
 *.tfvars.json
+*.tfvars
+secret_*.tfvars
+secrets.auto.tfvars
+secret.tfvars.json
+secret.tfvars
 override.tf
 override.tf.json
 *_override.tf
