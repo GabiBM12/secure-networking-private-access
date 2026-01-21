@@ -34,7 +34,7 @@ resource "azurerm_federated_identity_credential" "gha_repo2_main" {
   parent_id           = azurerm_user_assigned_identity.gha_repo2_tf.id
 
   issuer   = "https://token.actions.githubusercontent.com"
-  subject  = "repo:GabiBM12/secure-networking-private-access:ref:refs/heads/main"
+  subject  = "repo:GabiBM12/secure-networking-private-access:environment:dev"
   audience = ["api://AzureADTokenExchange"]
 }
 
