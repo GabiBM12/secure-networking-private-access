@@ -5,7 +5,7 @@ terraform {
     container_name       = "tfstate"
     key                  = "secure-networking-private-acces/dev.tfstate"
 
-    use_oidc = true
+    use_oidc         = true
     use_azuread_auth = true
   }
 }
