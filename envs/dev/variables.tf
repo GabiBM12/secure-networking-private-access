@@ -18,3 +18,8 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+variable "rbac_principal_object_ids" {
+  description = "Principals to grant bootstrap access (e.g., your user + GitHub OIDC SP)."
+  type        = list(string)
+  default     = []
+}

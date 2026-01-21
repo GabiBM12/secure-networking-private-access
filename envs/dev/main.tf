@@ -1,5 +1,6 @@
 locals {
-  name_prefix = "${var.project_name}-${var.environment}"
+  name_prefix          = "${var.project_name}-${var.environment}"
+  bootstrap_principals = toset(var.rbac_principal_object_ids)
 
   tags = merge(
     var.tags,
@@ -200,22 +201,28 @@ module "pe_keyvault" {
   tags = local.tags
 }
 
-module "rbac" {
+module "rbac_kv_secrets_officer" {
   source = "../../modules/iam-rbac"
 
   assignments = {
-    # For verification/testing: grant your current identity access.
-    # You can later replace this with managed identities from workloads.
-    me_kv_secrets_officer = {
+    for pid in local.bootstrap_principals :
+    "kv-secrets-officer-${pid}" => {
       scope                = module.keyvault.id
       role_definition_name = "Key Vault Secrets Officer"
-      principal_id         = data.azurerm_client_config.current.object_id
+      principal_id         = pid
     }
+  }
+}
 
-    me_storage_blob_contributor = {
+module "rbac_storage_blob_contributor" {
+  source = "../../modules/iam-rbac"
+
+  assignments = {
+    for pid in local.bootstrap_principals :
+    "st-blob-contrib-${pid}" => {
       scope                = module.storage.id
       role_definition_name = "Storage Blob Data Contributor"
-      principal_id         = data.azurerm_client_config.current.object_id
+      principal_id         = pid
     }
   }
 }
