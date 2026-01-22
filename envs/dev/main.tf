@@ -112,7 +112,19 @@ module "nsg_workloads" {
   subnet_id           = module.network.subnet_ids["snet-workloads"]
   tags                = local.tags
 
-  rules = []
+  rules = [
+    {
+      name                       = "Allow-VNet-HTTPS-Inbound"
+      priority                   = 200
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "443"
+      source_address_prefix      = "VirtualNetwork"
+      destination_address_prefix = "*"
+    }
+  ]
 }
 
 module "private_dns" {
