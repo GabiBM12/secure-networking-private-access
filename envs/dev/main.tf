@@ -124,7 +124,6 @@ module "nsg_workloads" {
       source_address_prefix      = "VirtualNetwork"
       destination_address_prefix = "*"
     }
-
   ]
 }
 
