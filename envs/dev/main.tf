@@ -113,7 +113,7 @@ module "nsg_workloads" {
   tags                = local.tags
 
   rules = [
-     {
+    {
       name                       = "Allow-VNet-HTTPS-Inbound"
       priority                   = 200
       direction                  = "Inbound"
